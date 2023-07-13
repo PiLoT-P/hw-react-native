@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Keyboard, Image, ImageBackground, StyleSheet, Text, TextInput, TouchableOpacity, View, Button, KeyboardAvoidingView, Platform, TouchableWithoutFeedback } from 'react-native';
 import bgImage from '../images/PhotoBG-min.png';
 import Icon from 'react-native-vector-icons/AntDesign';
-import avatar from '../images/NFT-Avatar.png';
+import * as ImagePicker from 'expo-image-picker';
 
 const Registration = () => {
 
@@ -10,8 +10,32 @@ const Registration = () => {
     const [inputFocusPassword, setInputFocusPassword] = useState(false);
     const [inputFocusLogin, setInputFocusLogin] = useState(false);
 
-    const showPassword = () => {
+    const [login, setLogin] = useState('');
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [showPassword, setShowPassword] = useState(true);
+    const [image, setImage] = useState(null);
+
+    const pickImage = async () => {
         
+        let result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.All,
+            allowsEditing: true,
+            aspect: [4, 3],
+            quality: 1,
+        });
+
+        console.log(result);
+
+        if (!result.canceled) {
+        setImage(result.assets[0].uri);
+        }
+    };
+
+    const submitForm = () => {
+        formInpits = [login, email, password];
+
+        console.log(formInpits);
     }
 
     return (
@@ -20,12 +44,15 @@ const Registration = () => {
                 <KeyboardAvoidingView behavior={Platform.OS == "ios" ? "padding" : "height"} style={styles.keyboardContainer}>
                     <View style={styles.formContainer}>
                         <View style={styles.blockAvatar}>
-                            <Image style={styles.avatar} />
-                            <Icon style={styles.addIcon} name="pluscircleo" size={25} color={'#FF6C00'}/>
+                            {image && <Image source={{ uri: image }} style={styles.avatar} />}
+                            {image ? <Icon style={styles.addIcon} name="closecircle" size={25} color={'#BDBDBD'} onPress={() => setImage(null)} /> :
+                                <Icon style={styles.addIcon} name="pluscircleo" size={25} color={'#FF6C00'} onPress={pickImage} />}
                         </View>
                         <Text style={styles.mainText}>Реєстрація</Text>
                         <View  style={styles.formBlock}>
                             <TextInput
+                                onChangeText={(val) => setLogin(val)}
+                                value={login}
                                 placeholder={"Логін"}
                                 placeholderStyle={{ fontFamily: 'Roboto-Regular', fontSize: 16, color: '#BDBDBD', fontWeight: 400, }}
                                 style={[styles.inputBlock, inputFocusLogin && styles.focusInputBlock]}
@@ -33,6 +60,8 @@ const Registration = () => {
                                 onBlur={() => setInputFocusLogin(false)}
                             ></TextInput>
                             <TextInput
+                                onChangeText={(val) => setEmail(val)}
+                                value={email}
                                 placeholder={"Адреса електронної пошти"}
                                 placeholderStyle={{ fontFamily: 'Roboto-Regular', fontSize: 16, color: '#BDBDBD', fontWeight: 400, }}
                                 style={[styles.inputBlock, inputFocusEmail && styles.focusInputBlock]}
@@ -41,16 +70,18 @@ const Registration = () => {
                             ></TextInput>
                             <View style={styles.blockPasswod}>
                                 <TextInput
+                                    onChangeText={(val) => setPassword(val)}
+                                    value={password}
                                     placeholder={"Пароль"}
                                     placeholderStyle={{ fontFamily: 'Roboto-Regular', fontSize: 16, color: '#BDBDBD', fontWeight: 400, }}
-                                    secureTextEntry={true}
+                                    secureTextEntry={showPassword}
                                     style={[styles.inputBlock, inputFocusPassword && styles.focusInputBlock]}
                                     onFocus={() => setInputFocusPassword(true)}
                                     onBlur={() => setInputFocusPassword(false)}
                             ></TextInput>
-                                <Text style={styles.showPassword} onPress={showPassword}>Показати</Text>
+                                <Text style={styles.showPassword} onPress={(val)=>setShowPassword(!showPassword)}>Показати</Text>
                             </View>
-                            <TouchableOpacity style={styles.formButton}>
+                            <TouchableOpacity style={styles.formButton} onPress={submitForm}>
                                 <Text style={styles.formBottomText}>Зареєстуватися</Text>
                             </TouchableOpacity>
                         </View>
@@ -152,10 +183,6 @@ const styles = StyleSheet.create({
     blockPasswod: {
       width: '100%'  
     },
-    blockAvatar: {
-        top: -60,
-        position: 'absolute',
-    },
     showPassword:{
         position: 'absolute',
         top: 16,
@@ -165,8 +192,15 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontWeight: 400,
     },
-    avatar: {
+    blockAvatar: {
+        height: 120,
+        width: 120,
+        borderRadius: 16,
+        top: -60,
+        position: 'absolute',
         backgroundColor: '#F6F6F6',
+    },
+    avatar: {
         height: 120,
         width: 120,
         borderRadius: 16,

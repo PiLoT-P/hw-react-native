@@ -7,38 +7,52 @@ const Login = () => {
     const [inputFocusEmail, setInputFocusEmail] = useState(false);
     const [inputFocusPassword, setInputFocusPassword] = useState(false);
 
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [showPassword, setShowPassword] = useState(true);
+
+    const submitForm = () => {
+        formInpits = [email, password];
+
+        console.log(formInpits);
+    }
+
     return (
         <ImageBackground source={bgImage} resizeMode="cover" style={styles.image}>
             <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-                    <KeyboardAvoidingView behavior={Platform.OS == "ios" ? "padding" : "height"} style={styles.keyboardContainer}>
-                        <View style={styles.formContainer}>
-                            <Text style={styles.mainText}>Увійти</Text>
-                            <View  style={styles.formBlock}>
+                <KeyboardAvoidingView behavior={Platform.OS == "ios" ? "padding" : "height"} style={styles.keyboardContainer}>
+                    <View style={styles.formContainer}>
+                        <Text style={styles.mainText}>Увійти</Text>
+                        <View  style={styles.formBlock}>
+                        <TextInput
+                                onChangeText={(val) => setEmail(val)}
+                                value={email}
+                                placeholder={"Адреса електронної пошти"}
+                                placeholderStyle={{ fontFamily: 'Roboto-Regular', fontSize: 16, color: '#BDBDBD', fontWeight: 400, }}
+                                style={[styles.inputBlock, inputFocusEmail && styles.focusInputBlock]}
+                                onFocus={() => setInputFocusEmail(true)}
+                                onBlur={() => setInputFocusEmail(false)}
+                            ></TextInput>
+                            <View style={styles.blockPasswod}>
                                 <TextInput
-                                    placeholder={"Адреса електронної пошти"}
+                                    onChangeText={(val) => setPassword(val)}
+                                    value={password}
+                                    placeholder={"Пароль"}
                                     placeholderStyle={{ fontFamily: 'Roboto-Regular', fontSize: 16, color: '#BDBDBD', fontWeight: 400, }}
-                                    style={[styles.inputBlock, inputFocusEmail && styles.focusInputBlock]}
-                                    onFocus={() => setInputFocusEmail(true)}
-                                    onBlur={() => setInputFocusEmail(false)}
+                                    secureTextEntry={showPassword}
+                                    style={[styles.inputBlock, inputFocusPassword && styles.focusInputBlock]}
+                                    onFocus={() => setInputFocusPassword(true)}
+                                    onBlur={() => setInputFocusPassword(false)}
                                 ></TextInput>
-                                <View style={styles.blockPasswod}>
-                                    <TextInput
-                                        placeholder={"Пароль"}
-                                        placeholderStyle={{ fontFamily: 'Roboto-Regular', fontSize: 16, color: '#BDBDBD', fontWeight: 400, }}
-                                        secureTextEntry={true}
-                                        style={[styles.inputBlock, inputFocusPassword && styles.focusInputBlock]}
-                                        onFocus={() => setInputFocusPassword(true)}
-                                        onBlur={() => setInputFocusPassword(false)}
-                                    ></TextInput>
-                                    <Text style={styles.showPassword} >Показати</Text>
-                                </View>
-                                <TouchableOpacity style={styles.formButton}>
-                                        <Text style={styles.formBottomText}>Увійти</Text>
-                                    </TouchableOpacity>
+                                <Text style={styles.showPassword} onPress={ () => setShowPassword(!showPassword)} >Показати</Text>
                             </View>
-                            <Text style={styles.loginText}>Немає акаунту? Зареєструватися</Text>
+                            <TouchableOpacity style={styles.formButton} onPress={submitForm}>
+                                    <Text style={styles.formBottomText}>Увійти</Text>
+                                </TouchableOpacity>
                         </View>
-                    </KeyboardAvoidingView>
+                        <Text style={styles.loginText}>Немає акаунту? Зареєструватися</Text>
+                    </View>
+                </KeyboardAvoidingView>
             </TouchableWithoutFeedback>
         </ImageBackground>
     );
