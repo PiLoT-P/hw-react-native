@@ -3,6 +3,7 @@ import { Keyboard, Image, ImageBackground, StyleSheet, Text, TextInput, Touchabl
 import bgImage from '../images/PhotoBG-min.png';
 import Icon from 'react-native-vector-icons/AntDesign';
 import * as ImagePicker from 'expo-image-picker';
+import { useNavigation } from '@react-navigation/native';
 
 const Registration = () => {
 
@@ -37,6 +38,8 @@ const Registration = () => {
 
         console.log(formInpits);
     }
+
+     const navigation = useNavigation();
 
     return (
         <ImageBackground source={bgImage} resizeMode="cover" style={styles.image}>
@@ -85,7 +88,7 @@ const Registration = () => {
                                 <Text style={styles.formBottomText}>Зареєстуватися</Text>
                             </TouchableOpacity>
                         </View>
-                        <Text style={styles.loginText}>Вже є акаунт? Увійти</Text>
+                        <Text style={styles.loginText} onPress={() => navigation.navigate("Login")}>Вже є акаунт? Увійти</Text>
                     </View>
                 </KeyboardAvoidingView>
             </TouchableWithoutFeedback>

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Keyboard, Image, ImageBackground, StyleSheet, Text, TextInput, TouchableOpacity, View, Button, KeyboardAvoidingView, Platform, TouchableWithoutFeedback } from 'react-native';
 import bgImage from '../images/PhotoBG-min.png';
+import { useNavigation } from '@react-navigation/native';
 
 const Login = () => {
 
@@ -16,6 +17,8 @@ const Login = () => {
 
         console.log(formInpits);
     }
+
+    const navigation = useNavigation();
 
     return (
         <ImageBackground source={bgImage} resizeMode="cover" style={styles.image}>
@@ -50,7 +53,7 @@ const Login = () => {
                                     <Text style={styles.formBottomText}>Увійти</Text>
                                 </TouchableOpacity>
                         </View>
-                        <Text style={styles.loginText}>Немає акаунту? Зареєструватися</Text>
+                        <Text style={styles.loginText} onPress={() => navigation.navigate("Registration")}>Немає акаунту? Зареєструватися</Text>
                     </View>
                 </KeyboardAvoidingView>
             </TouchableWithoutFeedback>
