@@ -1,43 +1,108 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import { Image, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import * as ImagePicker from 'expo-image-picker';
+import { Image, StyleSheet, Text, TextInput, TouchableOpacity, View, Dimensions } from 'react-native';
+import { Camera } from "expo-camera";
+import * as MediaLibrary from "expo-media-library";
+import MapView, { Marker } from "react-native-maps";
+import * as Location from "expo-location";
+import axios from 'axios';
+import { useNavigation } from '@react-navigation/native';
 
 const CreatePost = () => {
 
   const [image, setImage] = useState(null);
   const [name, setName] = useState('');
-  const [location, setLocation] = useState('');
   const [submitDisabled, setSubmitDisabled] = useState(true);
 
-  const pickImage = async () => {
-    let result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.All,
-        allowsEditing: true,
-        aspect: [4, 3],
-        quality: 1,
-    });
+  const [hasPermission, setHasPermission] = useState(null);
+  const [cameraRef, setCameraRef] = useState(null);
+  const [type, setType] = useState(Camera.Constants.Type.back);
 
-    console.log(result);
-
-    if (!result.canceled) {
-    setImage(result.assets[0].uri);
-    }
-  };
+  const [location, setLocation] = useState(null);
 
   useEffect(() => {
     if (image && name && location) {
       setSubmitDisabled(false);
     }
-  },[image, name, location])
+  }, [image, name, location])
+
+  useEffect(() => {
+  (async () => {
+    try {
+      let { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== "granted") {
+        console.log("Permission to access location was denied");
+      } else {
+        let location = await Location.getCurrentPositionAsync({});
+        const coords = {
+          latitude: location.coords.latitude,
+          longitude: location.coords.longitude,
+        };
+
+        const nominatimUrl = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${coords.latitude}&lon=${coords.longitude}`;
+        const response = await axios.get(nominatimUrl);
+        const { address } = response.data;
+        setLocation(`${address.state}, ${address.country}`)
+      }
+    } catch (error) {
+      console.error("Error while getting location:", error);
+    }
+  })();
+}, []);
+
+  useEffect(() => {
+    (async () => {
+      const { status } = await Camera.requestCameraPermissionsAsync();
+      await MediaLibrary.requestPermissionsAsync();
+
+      setHasPermission(status === "granted");
+    })();
+  }, []);
+
+  if (hasPermission === null) {
+    return <View />;
+  }
+  if (hasPermission === false) {
+    return <Text>No access to camera</Text>;
+  }
+
+  const navigation = useNavigation();
+
+  const trashAll = () => {
+    setImage(null);
+    setName('');
+  }
 
   return (
     <View style={styles.container}>
-      <View style={styles.imageContainer}>
-        {image && <Image style={styles.image} source={{ uri: image }} />}
-        <Ionicons onPress={pickImage} style={[styles.camera, image ? styles.cameraFocus: null]} name={'camera'} size={24} color={'#BDBDBD'}/>
-      </View>
-      {image? <Text style={styles.textImage}>Редагувати фото</Text>: <Text style={styles.textImage}>Завантажте фото</Text>}
+      {image ? 
+        <View style={styles.imageContainer}>
+          <Image style={styles.image} source={{ uri: image }} />
+          <Ionicons onPress={() => setImage(null)} style={styles.iconCameraImage} name={'camera'} size={24} color={'#BDBDBD'}/>
+        </View>
+        : <Camera
+        style={styles.camera}
+        type={type}
+        ref={setCameraRef}
+      >
+        <View style={styles.photoView}>
+          <TouchableOpacity
+            style={styles.button}
+            onPress={async () => {
+              if (cameraRef) {
+                const { uri } = await cameraRef.takePictureAsync();
+                await MediaLibrary.createAssetAsync(uri);
+                setImage(uri);
+              }
+            }}
+          >
+            <View style={styles.takePhotoOut}>
+              <Ionicons style={styles.iconCamera} name={'camera'} size={24} color={'#BDBDBD'}/>
+            </View>
+          </TouchableOpacity>
+        </View>
+        </Camera>}
+      {image ? <Text style={styles.textImage}>Редагувати фото</Text>: <Text style={styles.textImage}>Завантажте фото</Text>}
       <View style={styles.formContainer}>
         <TextInput
           onChangeText={(val) => setName(val)}
@@ -48,7 +113,6 @@ const CreatePost = () => {
         ></TextInput>
         <View style={styles.locationContainer}>
           <TextInput
-            onChangeText={(val) => setLocation(val)}
             value={location}
             placeholder={"Місцевість..."}
             placeholderStyle={{ fontFamily: 'Roboto-Regular', fontSize: 16, color: '#BDBDBD', fontWeight: 400, }}
@@ -59,11 +123,12 @@ const CreatePost = () => {
       </View>
       <TouchableOpacity
         aria-disabled={submitDisabled}
-        style={[styles.formButton, submitDisabled? styles.formButtonDisable : null]}
+        style={[styles.formButton, submitDisabled ? styles.formButtonDisable : null]}
+        onPress={() => navigation.navigate("Posts")}
       >
         <Text style={[styles.formBottomText, submitDisabled? styles.formBottomTextDisable : null]}>Опублікувати</Text>
       </TouchableOpacity>
-      <TouchableOpacity style={styles.trashBlock}>
+      <TouchableOpacity onPress={() => trashAll()} style={styles.trashBlock}>
         <Ionicons style={styles.iconTrash} name={'trash-outline'} size={24} color={'#BDBDBD'}/>
       </TouchableOpacity>
     </View>
@@ -81,7 +146,7 @@ const styles = StyleSheet.create({
   },
   imageContainer: {
     backgroundColor: '#F6F6F6',
-    height: 248,
+    height: 240,
     borderWidth: 1,
     borderColor: '#E8E8E8',
     borderRadius: 8,
@@ -93,17 +158,13 @@ const styles = StyleSheet.create({
     height: 248,
     borderRadius: 8,
   },
-  camera: {
+  iconCameraImage: {
     position: 'absolute',
     top: 90,
     left: '42%',
-    backgroundColor: '#FFF',
-    padding: 18,
-    borderRadius: 50
-  },
-  cameraFocus: {
     backgroundColor: '#ffffff4d',
-    color: '#FFFFFF',
+    padding: 18,
+    borderRadius: 50,
   },
   textImage: {
     color: '#BDBDBD',
@@ -168,8 +229,44 @@ const styles = StyleSheet.create({
     paddingRight: 23,
     backgroundColor: '#F6F6F6',
     borderRadius: 20,
-  }
+  },
+  //
+  camera: {
+    height: 240,
+    borderRadius: 8,
+  },
+  photoView: {
+    height: '100%',
+    backgroundColor: "transparent",
+    justifyContent: "center",
+  },
+
+  button: { alignSelf: "center" },
+
+  takePhotoOut: {
+    height: 60,
+    width: 60,
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    borderRadius: 50,
+    backgroundColor: '#ffffff4d'
+  },
+  iconCamera: {
+    
+  },
+  mapStyle: {
+    width: Dimensions.get("window").width,
+    height: Dimensions.get("window").height,
+  },
 });
 
 
 export default CreatePost;
+
+
+{/* <View style={styles.imageContainer}>
+        {image && <Image style={styles.image} source={{ uri: image }} />}
+        <Ionicons onPress={pickImage} style={[styles.camera, image ? styles.cameraFocus: null]} name={'camera'} size={24} color={'#BDBDBD'}/>
+      </View>
+      {image? <Text style={styles.textImage}>Редагувати фото</Text>: <Text style={styles.textImage}>Завантажте фото</Text>} */}

@@ -3,6 +3,8 @@ import ImageAvatar from '../../images/NFT-Avatar.png';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { useState } from 'react';
 import bgImage from '../../images/Rectangle23.png';
+import { useNavigation } from '@react-navigation/native';
+import { TouchableOpacity } from 'react-native';
 
 const Posts = () => {
 
@@ -11,6 +13,8 @@ const Posts = () => {
     { image: bgImage, name: 'Ліс', location: "Ivano-Frankivs'k Region, Ukraine", coments: 0 },
     { image: bgImage, name: 'Ліс', location: "Ivano-Frankivs'k Region, Ukraine", coments: 0 },
   ]);
+
+  const navigation = useNavigation();
 
   return (
     <View style={styles.container}>
@@ -29,10 +33,14 @@ const Posts = () => {
               <Image source={item.image} style={styles.postPhoto} />
               <Text style={styles.postTitle}>{item.name}</Text>
               <View style={styles.comentTextContainer}>
+                <TouchableOpacity style={styles.comentTextBlock} onPress={() => navigation.navigate("Comments")}>
                   <Ionicons name={'md-chatbubble-outline'} size={24} color={'#BDBDBD'}/>
                   <Text style={styles.coments}>{item.coments} </Text>
-                  <Ionicons style={styles.iconLocation} name={'location-outline'} size={24} color={'#BDBDBD'}/>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.comentTextBlock} onPress={() => navigation.navigate("Map")}>
+                  <Ionicons name={'location-outline'} size={24} color={'#BDBDBD'}/>
                   <Text style={styles.location}>{item.location}</Text>
+                </TouchableOpacity>
               </View>
             </View>
           )}
@@ -97,6 +105,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginTop: 8,
+    justifyContent: 'space-between',
+  },
+  comentTextBlock: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   coments: {
     marginLeft: 6,
@@ -104,9 +117,6 @@ const styles = StyleSheet.create({
     fontFamily: 'Roboto-Regular',
     fontSize: 16,
     fontWeight: 400,
-  },
-  iconLocation: {
-    marginLeft: 'auto'
   },
   location: {
     color: '#212121',
