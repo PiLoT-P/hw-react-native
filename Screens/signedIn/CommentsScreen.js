@@ -1,60 +1,43 @@
 import { useState } from 'react';
 import { Image, StyleSheet, Text, View, FlatList } from 'react-native';
-import ImageAvatar from '../../images/NFT-Avatar.png';
-import bgImage from '../../images/Rectangle23.png';
 import { TextInput } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import { useRoute } from '@react-navigation/native';
+import { useDispatch, useSelector } from 'react-redux';
+import { createComment } from '../../redus/posts/postsOperation';
+import { selectPosts } from '../../redus/posts/postsSelector';
 
 const Comments = () => {
-
+    const dispatch = useDispatch();
+    const { params: { id, imageUrl, avatar } } = useRoute();
     const [comment, setComment] = useState('');
-
-    const [dataList, setdataList] = useState([
-        { iconComment: ImageAvatar, textComment: 'Really love your most recent photo. I’ve been trying to capture the same thing for a few months and would love some tips!', dataTime: '09 червня, 2020 | 08:40', status: 'user' },
-        { iconComment: ImageAvatar, textComment: 'A fast 50mm like f1.8 would help with the bokeh. I’ve been using primes as they tend to get a bit sharper images.',  dataTime: '09 червня, 2020 | 08:40', status: 'creator'},
-        { iconComment: ImageAvatar, textComment: 'Thank you! That was very helpful!', dataTime: '09 червня, 2020 | 08:40', status: 'user' },
-        { iconComment: ImageAvatar, textComment: 'A fast 50mm like f1.8 would help with the bokeh. I’ve been using primes as they tend to get a bit sharper images.', dataTime: '09 червня, 2020 | 08:40', status: 'creator' },
-        { iconComment: ImageAvatar, textComment: 'A fast 50mm like f1.8 would help with the bokeh. I’ve been using primes as they tend to get a bit sharper images.', dataTime: '09 червня, 2020 | 08:40', status: 'creator' },
-        { iconComment: ImageAvatar, textComment: 'A fast 50mm like f1.8 would help with the bokeh. I’ve been using primes as they tend to get a bit sharper images.', dataTime: '09 червня, 2020 | 08:40', status: 'creator' },
-        { iconComment: ImageAvatar, textComment: 'A fast 50mm like f1.8 would help with the bokeh. I’ve been using primes as they tend to get a bit sharper images.',  dataTime: '09 червня, 2020 | 08:40', status: 'creator'},
-    ]);
+    const dataList = useSelector(selectPosts).filter((el)=> el.postId === id);
 
     const sendComment = () => {
         const newComment = {
-            iconComment: ImageAvatar,
-            textComment: `${comment}`,
-            dataTime: '09 червня, 2020 | 08:40',
-            status: 'creator',
+            postId: id,
+            avatarImage: avatar,
+            comment,
         }
-
-        setdataList((prevList) => [...prevList, newComment]);
+        dispatch(createComment(newComment));
+        console.log('comment')
     }
     
     return (
         <View style={styles.container}>
-            <Image source={bgImage} style={styles.mainImage} />
+            <Image source={{ uri: imageUrl }} style={styles.mainImage} />
             <View style={styles.containerComments}>
                 <FlatList 
-                data={dataList}
+                data={dataList[0].post.comments}
                 renderItem={({ item }) => (
                     <View>
-                        {item.status === 'creator' ? 
-                            <View style={styles.commentItem}>
-                                <View style={styles.commentBlock}>
-                                    <Text  style={styles.commentText}>{item.textComment}</Text>
-                                    <Text style={[styles.commentData, styles.commentDataCR]}>{item.dataTime}</Text>
-                                </View>
-                                <Image source={item.iconComment} style={[styles.iconComment, styles.iconCommentCR]} />
+                        <View style={styles.commentItem}>
+                            <View style={styles.commentBlock}>
+                                <Text  style={styles.commentText}>{item.comment}</Text>
+                                <Text style={[styles.commentData, styles.commentDataCR]}>{item.date}</Text>
                             </View>
-                        :
-                            <View style={styles.commentItem}>
-                                <Image source={item.iconComment} style={styles.iconComment} />
-                                <View style={styles.commentBlock}>
-                                    <Text  style={styles.commentText}>{item.textComment}</Text>
-                                    <Text style={styles.commentData}>{item.dataTime}</Text>
-                                </View>
-                            </View>
-                        }
+                            <Image source={{uri: item.avatarImage}} style={[styles.iconComment, styles.iconCommentCR]} />
+                        </View>
                     </View>
                 )}
                 />
@@ -159,3 +142,21 @@ const styles = StyleSheet.create({
 })
 
 export default Comments;
+
+// {item.status === 'creator' ? 
+                            // <View style={styles.commentItem}>
+                            //     <View style={styles.commentBlock}>
+                            //         <Text  style={styles.commentText}>{item.comment}</Text>
+                            //         <Text style={[styles.commentData, styles.commentDataCR]}>{item.date}</Text>
+                            //     </View>
+                            //     <Image source={{uri: item.avatarImage}} style={[styles.iconComment, styles.iconCommentCR]} />
+                            // </View>
+//                         :
+//                             <View style={styles.commentItem}>
+//                                 <Image source={{uri: avatarImage}} style={styles.iconComment} />
+//                                 <View style={styles.commentBlock}>
+//                                     <Text  style={styles.commentText}>{item.comment}</Text>
+//                                     <Text style={styles.commentData}>{item.date}</Text>
+//                                 </View>
+//                             </View>
+//                         }

@@ -1,30 +1,33 @@
+import { useRoute } from "@react-navigation/native";
 import { View, Text, StyleSheet, Dimensions } from "react-native";
 import MapView, { Marker } from "react-native-maps";
 
 const Map = () => {
-    return (
-        <View style={styles.container}>
-            <MapView
-                style={styles.mapStyle}
-                region={{
-                latitude: 37.78825,
-                longitude: -122.4324,
-                latitudeDelta: 0.0922,
-                longitudeDelta: 0.0421,
-                }}
-                mapType="standard"
-                minZoomLevel={15}
-                onMapReady={() => console.log("Map is ready")}
-                onRegionChange={() => console.log("Region change")}
-            >
-                <Marker
-                title="Ваш маркер"
-                coordinate={{ latitude: 37.78825, longitude: -122.4324 }}
-                description='Місце де було зробленно фото'
-                />
-            </MapView>
-        </View>
-    );
+  const { params: { locationCoords } } = useRoute();
+
+  return (
+      <View style={styles.container}>
+          <MapView
+              style={styles.mapStyle}
+              region={{
+              latitude: locationCoords.latitude,
+              longitude: locationCoords.longitude,
+              latitudeDelta: 0.0922,
+              longitudeDelta: 0.0421,
+              }}
+              mapType="standard"
+              minZoomLevel={15}
+              onMapReady={() => console.log("Map is ready")}
+              onRegionChange={() => console.log("Region change")}
+          >
+              <Marker
+              title="Ваш маркер"
+              coordinate={locationCoords}
+              description='Місце де було зробленно фото'
+              />
+          </MapView>
+      </View>
+  );
 }
 
 const styles = StyleSheet.create({

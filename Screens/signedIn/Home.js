@@ -6,12 +6,15 @@ import CreatePost from "./CreatePostsScreen";
 import { StyleSheet } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { TouchableOpacity } from "react-native";
+import { useDispatch } from "react-redux";
+import { logout } from "../../redus/auth/authOperation";
 
 const Tabs = createBottomTabNavigator();
 
 const Home = () => {
 
     const navigation = useNavigation();
+    const dispatch = useDispatch();
 
     return (
         <Tabs.Navigator
@@ -69,7 +72,7 @@ const Home = () => {
                 },
                 headerRight: () => (
                     <Ionicons
-                        onPress={() => alert("LogOut")}
+                        onPress={() => dispatch(logout())}
                         name={'md-log-out-outline'} size={24} color={'grey'}
                         style={styles.logOutBotton}
                     />

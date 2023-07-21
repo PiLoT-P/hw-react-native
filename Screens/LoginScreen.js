@@ -2,8 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { Keyboard, Image, ImageBackground, StyleSheet, Text, TextInput, TouchableOpacity, View, Button, KeyboardAvoidingView, Platform, TouchableWithoutFeedback } from 'react-native';
 import bgImage from '../images/PhotoBG-min.png';
 import { useNavigation } from '@react-navigation/native';
+import { useDispatch } from 'react-redux';
+import {login} from '../redus/auth/authOperation'
 
 const Login = () => {
+    const navigation = useNavigation();
+    const dispatch = useDispatch();
 
     const [inputFocusEmail, setInputFocusEmail] = useState(false);
     const [inputFocusPassword, setInputFocusPassword] = useState(false);
@@ -13,12 +17,11 @@ const Login = () => {
     const [showPassword, setShowPassword] = useState(true);
 
     const submitForm = () => {
-        formInpits = [email, password];
+        const dataToSend = { email: email, password: password,};
 
-        console.log(formInpits);
+        dispatch(login(dataToSend))
+        console.log('login')
     }
-
-    const navigation = useNavigation();
 
     return (
         <ImageBackground source={bgImage} resizeMode="cover" style={styles.image}>

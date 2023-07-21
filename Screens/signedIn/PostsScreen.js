@@ -1,28 +1,33 @@
 import {Image, StyleSheet, Text, View, FlatList } from 'react-native';
-import ImageAvatar from '../../images/NFT-Avatar.png';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import { useState } from 'react';
-import bgImage from '../../images/Rectangle23.png';
+import { useEffect, useState } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { TouchableOpacity } from 'react-native';
+import { useDispatch, useSelector } from 'react-redux';
+import { selectUser } from '../../redus/auth/authSelector';
+import { selectPosts } from '../../redus/posts/postsSelector';
+import { readPosts } from '../../redus/posts/postsOperation';
 
 const Posts = () => {
+  const {name, email, avatar} = useSelector(selectUser)
+  const dataList = useSelector(selectPosts);
+  const dispatch = useDispatch();
 
-  const [dataList, setdataList] = useState([
-    { image: bgImage, name: 'Ліс', location: "Ivano-Frankivs'k Region, Ukraine", coments: 0 },
-    { image: bgImage, name: 'Ліс', location: "Ivano-Frankivs'k Region, Ukraine", coments: 0 },
-    { image: bgImage, name: 'Ліс', location: "Ivano-Frankivs'k Region, Ukraine", coments: 0 },
-  ]);
+  useEffect(() => {
+    if (dataList.length === 0) {
+      dispatch(readPosts());
+    }
+  }, [])
 
   const navigation = useNavigation();
 
   return (
     <View style={styles.container}>
       <View style={styles.avatarContainer}>
-        <Image source={ImageAvatar} style={styles.avatar} />
+        <Image source={{ uri: avatar }} style={styles.avatar} />
         <View style={styles.textAvatarContainer}>
-          <Text style={styles.avatarName}>Natali Romanova</Text>
-          <Text style={styles.avatarEmail}>email@example.com</Text>
+          <Text style={styles.avatarName}>{name}</Text>
+          <Text style={styles.avatarEmail}>{email}</Text>
         </View>
       </View>
       <View style={styles.containerPosts}>
@@ -30,16 +35,16 @@ const Posts = () => {
           data={dataList}
           renderItem={({ item }) => (
             <View style={styles.postsList}>
-              <Image source={item.image} style={styles.postPhoto} />
-              <Text style={styles.postTitle}>{item.name}</Text>
+              <Image source={{uri: item.post.image }} style={styles.postPhoto} />
+              <Text style={styles.postTitle}>{item.post.name}</Text>
               <View style={styles.comentTextContainer}>
-                <TouchableOpacity style={styles.comentTextBlock} onPress={() => navigation.navigate("Comments")}>
+                <TouchableOpacity style={styles.comentTextBlock} onPress={() => navigation.navigate("Comments", {id: item.postId, imageUrl: item.post.image, avatar: avatar})}>
                   <Ionicons name={'md-chatbubble-outline'} size={24} color={'#BDBDBD'}/>
-                  <Text style={styles.coments}>{item.coments} </Text>
+                  <Text style={styles.coments}>{item.post.comments.length} </Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.comentTextBlock} onPress={() => navigation.navigate("Map")}>
+                <TouchableOpacity style={styles.comentTextBlock} onPress={() => navigation.navigate("Map", { locationCoords: item.post.coords})}>
                   <Ionicons name={'location-outline'} size={24} color={'#BDBDBD'}/>
-                  <Text style={styles.location}>{item.location}</Text>
+                  <Text style={styles.location}>{item.post.location}</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -66,6 +71,7 @@ const styles = StyleSheet.create({
     width: 60,
     height: 60,
     borderRadius: 16,
+    backgroundColor: '#E8E8E8',
   },
   textAvatarContainer: {
     marginLeft: 8,

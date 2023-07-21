@@ -1,66 +1,48 @@
-import {FlatList, Keyboard, Image, ImageBackground, StyleSheet, Text, TextInput, TouchableOpacity, View, Button, KeyboardAvoidingView, Platform, TouchableWithoutFeedback } from 'react-native';
+import {FlatList, Image, ImageBackground, StyleSheet, Text, View, } from 'react-native';
 import bgImage from '../../images/PhotoBG-min.png';
-import { useState } from 'react';
 import Icon from 'react-native-vector-icons/AntDesign';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import * as ImagePicker from 'expo-image-picker';
+import { useDispatch, useSelector } from 'react-redux';
+import { selectUser } from '../../redus/auth/authSelector';
+import { selectPosts } from '../../redus/posts/postsSelector';
+import { logout } from "../../redus/auth/authOperation";
+import { useNavigation } from '@react-navigation/native';
 
 const Profile = () => {
 
-  const [image, setImage] = useState(null);
+  const {name, avatar: image} = useSelector(selectUser)
+  const dataList = useSelector(selectPosts);
+  const dispatch = useDispatch();
 
-  const [dataList, setdataList] = useState([
-    { image: bgImage, name: 'Ліс', location: "Ivano-Frankivs'k Region, Ukraine", coments: 0, likes: 0 },
-    { image: bgImage, name: 'Ліс', location: "Ivano-Frankivs'k Region, Ukraine", coments: 0, likes: 0 },
-    { image: bgImage, name: 'Ліс', location: "Ivano-Frankivs'k Region, Ukraine", coments: 0, likes: 0 },
-    { image: bgImage, name: 'Ліс', location: "Ivano-Frankivs'k Region, Ukraine", coments: 0, likes: 0 },
-    { image: bgImage, name: 'Ліс', location: "Ivano-Frankivs'k Region, Ukraine", coments: 0, likes: 0 },
-  ]);
-
-  const pickImage = async () => {
-        
-    let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.All,
-      allowsEditing: true,
-      aspect: [4, 3],
-      quality: 1,
-    });
-
-    console.log(result);
-
-    if (!result.canceled) {
-    setImage(result.assets[0].uri);
-    }
-  };
-
+  const navigation = useNavigation();
   return (
     <ImageBackground source={bgImage} resizeMode="cover" style={styles.image}>
       <View style={styles.container}>
         <View style={styles.blockAvatar}>
           {image && <Image source={{ uri: image }} style={styles.avatar} />}
-          {image ? <Icon style={styles.addIcon} name="closecircle" size={25} color={'#BDBDBD'} onPress={() => setImage(null)} /> :
-            <Icon style={styles.addIcon} name="pluscircleo" size={25} color={'#FF6C00'} onPress={pickImage} />}
+          {image ? <Icon style={styles.addIcon} name="closecircle" size={25} color={'#BDBDBD'} /> :
+            <Icon style={styles.addIcon} name="pluscircleo" size={25} color={'#FF6C00'} />}
         </View>
         <Ionicons
-          onPress={() => alert("LogOut")}
+          onPress={() => dispatch(logout())}
           name={'md-log-out-outline'} size={24} color={'grey'}
           style={styles.logOutBotton}
         />
-        <Text style={styles.nameText}>Natali Romanova</Text>
+        <Text style={styles.nameText}>{name}</Text>
         <View style={styles.containerPosts}>
           <FlatList 
             data={dataList}
             renderItem={({ item }) => (
               <View style={styles.postsList}>
-                <Image source={item.image} style={styles.postPhoto} />
-                <Text style={styles.postTitle}>{item.name}</Text>
+                <Image source={{ uri: item.post.image }} style={styles.postPhoto} />
+                <Text style={styles.postTitle}>{item.post.name}</Text>
                 <View style={styles.comentTextContainer}>
-                  <Ionicons name={'md-chatbubble-outline'} size={24} color={'#BDBDBD'}/>
-                  <Text style={styles.coments}>{item.coments} </Text>
+                  <Ionicons name={'md-chatbubble-outline'} size={24} color={'#BDBDBD'} onPress={() => navigation.navigate("Comments", {id: item.postId, imageUrl: item.post.image, avatar: image})}/>
+                  <Text style={styles.coments}>{item.post.comments.length} </Text>
                   <Ionicons style={styles.iconLocation} name={'thumbs-up-outline'} size={24} color={'#BDBDBD'} />
-                  <Text style={styles.coments}>{item.likes}</Text>
+                  <Text style={styles.coments}>{item.post.likes}</Text>
                   <Ionicons style={styles.iconLocation} name={'location-outline'} size={24} color={'#BDBDBD'}/>
-                  <Text style={styles.location}>{item.location}</Text>
+                  <Text style={styles.location} onPress={() => navigation.navigate("Map", { locationCoords: item.post.coords})}>{item.post.location}</Text>
                 </View>
               </View>
             )}

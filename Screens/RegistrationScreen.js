@@ -4,8 +4,11 @@ import bgImage from '../images/PhotoBG-min.png';
 import Icon from 'react-native-vector-icons/AntDesign';
 import * as ImagePicker from 'expo-image-picker';
 import { useNavigation } from '@react-navigation/native';
+import { useDispatch } from 'react-redux';
+import {register} from '../redus/auth/authOperation'
 
 const Registration = () => {
+    const dispatch = useDispatch()
 
     const [inputFocusEmail, setInputFocusEmail] = useState(false);
     const [inputFocusPassword, setInputFocusPassword] = useState(false);
@@ -34,9 +37,10 @@ const Registration = () => {
     };
 
     const submitForm = () => {
-        formInpits = [login, email, password];
+        const dataToSend = { avatar: image, name: login, email: email, password: password };
 
-        console.log(formInpits);
+        dispatch(register(dataToSend));
+        console.log('register')
     }
 
      const navigation = useNavigation();
