@@ -7,8 +7,11 @@ import MapView, { Marker } from "react-native-maps";
 import * as Location from "expo-location";
 import axios from 'axios';
 import { useNavigation } from '@react-navigation/native';
+import { useDispatch } from 'react-redux';
+import { createPost } from '../../redus/posts/postsOperation';
 
 const CreatePost = () => {
+  const dispatch = useDispatch();
 
   const [image, setImage] = useState(null);
   const [name, setName] = useState('');
@@ -19,36 +22,7 @@ const CreatePost = () => {
   const [type, setType] = useState(Camera.Constants.Type.back);
 
   const [location, setLocation] = useState(null);
-
-  useEffect(() => {
-    if (image && name && location) {
-      setSubmitDisabled(false);
-    }
-  }, [image, name, location])
-
-  useEffect(() => {
-  (async () => {
-    try {
-      let { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== "granted") {
-        console.log("Permission to access location was denied");
-      } else {
-        let location = await Location.getCurrentPositionAsync({});
-        const coords = {
-          latitude: location.coords.latitude,
-          longitude: location.coords.longitude,
-        };
-
-        const nominatimUrl = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${coords.latitude}&lon=${coords.longitude}`;
-        const response = await axios.get(nominatimUrl);
-        const { address } = response.data;
-        setLocation(`${address.state}, ${address.country}`)
-      }
-    } catch (error) {
-      console.error("Error while getting location:", error);
-    }
-  })();
-}, []);
+  const [coords, setCoords] = useState({});
 
   useEffect(() => {
     (async () => {
@@ -58,6 +32,37 @@ const CreatePost = () => {
       setHasPermission(status === "granted");
     })();
   }, []);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        let { status } = await Location.requestForegroundPermissionsAsync();
+        if (status !== "granted") {
+          console.log("Permission to access location was denied");
+        } else {
+          let location = await Location.getCurrentPositionAsync({});
+          const coords = {
+            latitude: location.coords.latitude,
+            longitude: location.coords.longitude,
+          };
+
+          const nominatimUrl = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${coords.latitude}&lon=${coords.longitude}`;
+          const response = await axios.get(nominatimUrl);
+          const { address } = response.data;
+          setLocation(`${address.state}, ${address.country}`);
+          setCoords(coords);
+        }
+      } catch (error) {
+        console.error("Error while getting location:", error);
+      }
+    })();
+  }, []);
+
+  useEffect(() => {
+    if (image && name && location) {
+      setSubmitDisabled(false);
+    }
+  }, [image, name, location]);
 
   if (hasPermission === null) {
     return <View />;
@@ -71,6 +76,21 @@ const CreatePost = () => {
   const trashAll = () => {
     setImage(null);
     setName('');
+  };
+
+  const submitForm = () => {
+    const dataToSend = {
+      image,
+      name,
+      coords,
+      location,
+      likes: 0,
+      comments: [],
+    };
+
+    dispatch(createPost(dataToSend));
+    console.log('create post');
+    navigation.navigate("Posts");
   }
 
   return (
@@ -124,7 +144,7 @@ const CreatePost = () => {
       <TouchableOpacity
         aria-disabled={submitDisabled}
         style={[styles.formButton, submitDisabled ? styles.formButtonDisable : null]}
-        onPress={() => navigation.navigate("Posts")}
+        onPress={() => submitForm()}
       >
         <Text style={[styles.formBottomText, submitDisabled? styles.formBottomTextDisable : null]}>Опублікувати</Text>
       </TouchableOpacity>
