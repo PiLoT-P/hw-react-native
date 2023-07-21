@@ -30,6 +30,11 @@
     },
     "plugins": [
       "with-rn-image-crop-picker"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "30176b64-7b04-4467-83ed-28dc39950834"
+      }
+    }
   }
 }
