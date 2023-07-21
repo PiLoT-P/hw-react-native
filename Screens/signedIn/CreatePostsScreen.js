@@ -1,11 +1,10 @@
-import { useEffect, useState, useRef } from 'react';
-import Ionicons from 'react-native-vector-icons/Ionicons';
+import { useEffect, useState} from 'react';
 import { Image, StyleSheet, Text, TextInput, TouchableOpacity, View, Dimensions } from 'react-native';
 import { Camera } from "expo-camera";
 import * as MediaLibrary from "expo-media-library";
-import MapView, { Marker } from "react-native-maps";
 import * as Location from "expo-location";
 import axios from 'axios';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 import { useNavigation } from '@react-navigation/native';
 import { useDispatch } from 'react-redux';
 import { createPost } from '../../redus/posts/postsOperation';
